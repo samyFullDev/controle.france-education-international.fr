@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vérification de l'attestation</title>
+    <link href="/images/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180" />
+	<link href="./images/favicon-32x32.png" rel="icon" sizes="32x32" type="image/png" />
+	<link href="./images/favicon-16x16.png" rel="icon" sizes="16x16" type="image/png" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            max-width: 100%;
+            width: 100vw;
+            height: 100vh;
+            box-sizing: border-box;
+            /* background-image: url('./fond_menu_blanc.png'); */
+            background-size: contain;
+            /* background-color: #e4e9ea !important; */
+        }
+
+        .header {
+            width: 100vw;
+            height: fit-content;
+            overflow: hidden;
+            margin-bottom: 3px;
+        }
+
+        .header img {
+            width: 100vw;
+            height: 100px;
+            display: block;
+        }
+
+        .attention {
+            width: 80%;
+            background-color: #fff3cd;
+            padding: 15px;
+            border: 1px solid #ffeeba;
+            margin-bottom: 15px;
+            font-size: 1rem;
+            margin: 0 auto;
+        }
+
+        .bg-white{
+            width: 100vw;
+            height: fit-content;
+            background: #fff;
+            box-shadow: 1px 2px 3px rgba(66, 66, 66, 0.363);
+            padding-bottom: 50px;
+            display: flex; 
+            flex-direction: column;
+            row-gap: 20px;
+            align-items: center;
+            justify-content: center;
+            padding-top: 20px;
+        }
+        
+        .button {
+            display: block;
+            background-color: #337ab7 !important;
+            height: 50px;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+            margin-top: 20px;
+            margin-bottom: 15px;
+            width: 85%;
+            margin: 0 auto;
+            box-sizing: border-box;
+            font-size: 18px;
+        }
+
+        .cote{
+            margin-top: 10px;
+            margin-left: 20%;
+            display: block;
+        }
+
+        .inp{
+            width: 30%;
+            margin-left: 10px;
+            padding: 5px;
+            border-radius: 3px;
+        }
+
+        .inp:focus{
+            display: block;
+            box-shadow: 0 0 5px #337ab7;
+            outline: none;
+        }
+
+        .hidden-section {
+            display: none;
+            width: 80%;
+            margin: 0 auto;
+            margin-top: 20px;
+        }
+
+        .visible {
+            display: block;
+        }
+
+        .image-result {
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            display: none;
+        }
+
+        .result-container {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .result-header {
+            background-color: #fff3cd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .result-header p {
+            margin: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            background-color: white;
+            font-size: 0.9rem;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid black;
+        }
+
+        th,
+        td {
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .error {
+            color: #842029;
+            font-weight: bold;
+            font-size: 0.9rem;
+            display: block;
+            width: 90%;
+            margin: 0 auto;
+            padding: 10px;
+            background: #f8d7da;
+            border: 1px solid #f5c2c7;
+            margin-bottom: 30px;
+        }
+
+        .captcha-image {
+            margin-bottom: 10px;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .hidden-button {
+            display: none;
+        }
+
+        input[type="text"],
+        input[type="date"] {
+            width: 100%;
+            padding: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        #num_attestation {
+            width: 315px;
+        }
+
+        #date_session {
+            width: 315px;
+        }
+
+        #captcha {
+            width: 315px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                margin: 5px;
+                font-size: 0.9rem;
+            }
+
+            .attention {
+                padding: 10px;
+                font-size: 0.9rem;
+            }
+
+            .button {
+                padding: 10px;
+                font-size: 0.9rem;
+            }
+
+            .result-header {
+                padding: 8px;
+                margin-bottom: 15px;
+            }
+
+            th,
+            td {
+                padding: 6px;
+            }
+
+            .error {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+    <script>
+        function toggleSection() {
+            const section = document.getElementById('verification-section');
+            const button = document.querySelector('.button');
+
+            section.classList.toggle('visible');
+
+            if (section.classList.contains('visible')) {
+                button.classList.add('hidden-button');
+            }
+        }
+
+        function showImage(event) {
+            event.preventDefault();
+
+            const numAttestation = document.getElementById('num_attestation').value.trim();
+            const dateSession = document.getElementById('date_session').value.trim();
+            const captchaInput = parseInt(document.getElementById('captcha').value.trim());
+            const correctCaptcha = 8;
+
+            console.log('Numéro d\'attestation:', numAttestation);
+            console.log('Date de session:', dateSession);
+            console.log('CAPTCHA:', captchaInput);
+
+            if (numAttestation === 'F4FF1B651F92' && dateSession === '2024-07-25' && captchaInput === correctCaptcha) {
+                const imageResult = document.getElementById('image-result');
+                imageResult.style.display = 'block';
+
+                const verificationSection = document.getElementById('verification-section');
+                verificationSection.style.display = 'none';
+            } else {
+                const errorMessage = document.getElementById('error-message');
+                errorMessage.style.display = 'block'
+                errorMessage.textContent = 'Le code de seurite est incorrect';
+            }
+        }
+    </script>
+</head>
+
+<body>
+
+    <!-- Contenu de la première page -->
+    <div class="header">
+        <img src="https://image-000o.onrender.com/image.png" alt="France Éducation International">
+    </div>
+
+    <div class="bg-white">
+        <div class="attention">
+            <div>
+                <h2 style="color: #243b4d;">ATTENTION, TRES IMPORTANT:</h2>
+            <p style="color: #664d03;">Il est impératif de bien vérifier que l'URL sur laquelle mène le QR Code est bien
+                <strong>https://controle.france-education-international.fr/</strong></p>
+            <p style="color: #664d03;">Veuillez porter une attention vigilante à ce qu'il n'y ait pas une lettre de moins ou de plus
+                (par exemple : 2 "l" ou un "e" à la fin de "international").</p>
+            </div>
+        </div>
+        <button class="button" onclick="toggleSection()">Pour contrôler l'authenticité de l'attestation cliquez-ici.</button>
+    </div>
+   
+    <!-- Contenu de la deuxième page cachée par défaut -->
+    <div id="verification-section" class="hidden-section">
+        <h2 style="color: #454444; text-align: center;">Consultation et vérification des résultats d'une attestation du TCF</h2>
+        <form onsubmit="showImage(event)" style="border: 3px solid rgba(0, 0, 0, .03); padding: 15px; position: relative;">
+            <div style="padding: 15px; background-color: rgba(0, 0, 0, .03); position: absolute; top: 0px; left: 0px;">Renseignez les informations presentes sur l'attestation</div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; margin-top: 70px;">
+                <label for="num_attestation">Numéro d'attestation</label><br>
+                <input style="width: 50%; border: 1px solid gray;" type="text" id="num_attestation" name="num_attestation" class="inp" required><br><br>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                <label for="date_session">Date de la session</label><br>
+                <input style="width: 50%; border: 1px solid gray;" type="date" id="date_session" name="date_session" class="inp" required><br><br>
+            </div>
+
+            <div style="background-color: #cfe2ff; padding: 10px; border: 1px solid #b6d4fe;">
+                <p style="color: #084298; font-weight: bold; display: flex; align-items: center; row-gap: 10px;">
+                    <svg width="24" height="24" aria-label="Alarms" xmlns="" fill="currentColor" focusable="false" viewBox="0 0 16 16"><path d="M0 0 M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z M0 0 M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z " /></svg>    
+                    <span style="margin-left: 10px;">Où trouvez-vous le numéro d'attestation et la date de session ?</span>
+                </p>
+                <p>Attention, pour le numéro d'attestation, vous ne devez saisir que la partie qui se trouve après le dernier tiret ("-").</p>
+                <a href="#" style="text-decoration: none;">
+                    <ul>
+                        <li>Cliquez ici pour voir où se trouve le numéro d'attestation et la date de session sur l'attestation dématérialisée</li>
+                    </ul>
+                </a>
+            </div><br>
+
+            <label for="captcha">Saisissez la somme des deux nombres en chiffres :</label><br>
+            <img src="https://code-34wb.onrender.com/code.png" alt="CAPTCHA" class="captcha-image"><br>
+            <input type="text" id="captcha" name="captcha" class="inp" style="width: 95%;" required placeholder="Somme en chiffre"><br><br>
+
+            <p id="error-message" class="error" style="display: none;"></p>
+
+            <button type="submit" class="button" style="display: flex; align-items: center; justify-content: center; text-align: center; width: 100%;"> 
+                <span><svg class="align-middle" width="2O" height="20" xmlns="" fill="currentColor" focusable="false" viewBox="0 0 16 16"><path d="M0 0 M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z " /></svg></span>
+                <span style="margin-left: 10px;">Rechercher l'attestation</span>
+            </button>
+        </form>
+        
+    </div>
+
+    <!-- Affichage du résultat après avoir recherché l'attestation -->
+    <div id="image-result" class="image-result result-container">
+        <div>
+            <div>
+                <div class="result-header">
+                    <p>Résultats pour le « <strong>TCF Canada – Test de connaissance du français pour le Canada</strong> » du <strong>25/07/2024</strong> pour le candidat n°<strong>2397113</strong>.</p>
+                    <p>Nom : <strong>EBEN MALLA</strong><br>Prénom : <strong>ULRICH FABIOLA</strong></p>
+                </div>
+            </div>
+            <div>
+                <div style="width: 50%; border-radius: 10px; border: 1px solid rgb(199, 199, 199); margin: 0 auto;">
+                    <img src="https://go-7lr3.onrender.com/go.png" alt="Photo" style="width: 100%; max-width: 150px;">
+                </div>
+            </div>
+        </div>
+        <table>
+            
+            <tr>
+                <th>Épreuve</th>
+                <th>Score/Note</th>
+                <th>Niveau CECR</th>
+            </tr>
+            <tr>
+                <td>Compréhension orale</td>
+                <td>547</td>
+                <td>C1</td>
+            </tr>
+            <tr>
+                <td>Compréhension écrite</td>
+                <td>472</td>
+                <td>B2</td>
+            </tr>
+            <tr>
+                <td>Expression écrite</td>
+                <td>9</td>
+                <td>B1</td>
+            </tr>
+            <tr>
+                <td>Expression orale</td>
+                <td>18</td>
+                <td>C2</td>
+            </tr>
+        </table>
+    </div>
+    <span class="cote" style="color: #646464;;">&copy; France &Eacute;ducation international</span>
+
+</body>
+
+</html>
